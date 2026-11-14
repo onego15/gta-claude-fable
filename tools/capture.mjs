@@ -55,10 +55,10 @@ await seg('chase', () => {
   game.wanted.suppressed = false; document.querySelectorAll('.toast').forEach((t) => t.remove()); document.getElementById('h-big').classList.remove('show');
   for (const a of [...game.actors]) if (a.team === 'gang') game.removeActor(a);
   const L = game.L; const v = game.spawnVehicle('SportsCar2', 0, 0, 0, { paint: '#ffd166' }); v.place(L.roadX(3) - 2.4, L.roadZ(4) - 12, Math.PI); v.sleeping = false;
-  game.sky.setHours(19.3); p.hum.root.visible = false; if (p.hum.weapon) p.hum.weapon.mesh.visible = false; p.inVehicle = v; v.driver = p; game.onPlayerEnteredVehicle(v); v.vz = -15;
-  game.wanted.set(3); for (let k = 0; k < 2; k++) { const u = game.police.spawnUnit(); if (u) { u.v.place(v.pos.x + (k ? -0.4 : 3.2), v.pos.z + 7 + k * 9, Math.PI); u.v.vz = -19; u.v.ai.mode = 'pursuit'; } }
+  game.sky.setHours(19.3); p.hum.root.visible = false; if (p.hum.weapon) p.hum.weapon.mesh.visible = false; p.inVehicle = v; v.driver = p; game.onPlayerEnteredVehicle(v); v.vz = -14;
+  game.wanted.set(3); for (let k = 0; k < 2; k++) { const u = game.police.spawnUnit(); if (u) { u.v.place(v.pos.x + (k ? 0 : 3.4), v.pos.z + 9 + k * 6, Math.PI); u.v.vz = -19; u.v.ai.mode = 'pursuit'; } }
   game.rig.yaw = 0; PM.step(10); document.querySelectorAll('.toast').forEach((t) => t.remove());
-}, 58, "PM.hold(['KeyW']);");
+}, 58, "PM.hold(i % 4 ? ['KeyW'] : []);");
 await b.close();
 console.log('frames', n);
 execSync(`ffmpeg -y -loglevel error -framerate ${FPS} -i ${OUT}/f%04d.jpg -c:v libx264 -pix_fmt yuv420p -crf 22 -movflags +faststart docs/demo.mp4`);

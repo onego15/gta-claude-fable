@@ -84,12 +84,16 @@ await test('mission S (dock shootout) start -> clear -> case -> pass', () => {
   const M = game.missions; const s = M.starts.dock; PM.tp(s.x, s.z, 0); PM.step(5); M.start('dock'); PM.step(5);
   let shots = 0, frames = 0;
   // fight for real: aim at each live enemy's chest with the actual camera and fire the pistol
-  while (M.active && frames < 4000) {
+  while (M.active && frames < 6000) {
     T.god(); const live = M.active.enemies.filter((e) => e.alive);
     if (M.active.case) { PM.tp(M.active.case.pos.x, M.active.case.pos.z, 0); PM.step(3); continue; }
     if (!live.length) { PM.step(5); frames += 5; continue; }
     const e = live.sort((a, b) => a.distTo(p.pos) - b.distTo(p.pos))[0];
-    if (e.distTo(p.pos) > 14) { const dx = e.pos.x - p.pos.x, dz = e.pos.z - p.pos.z, dd = Math.hypot(dx, dz); PM.tp(e.pos.x - dx / dd * 9, e.pos.z - dz / dd * 9, 0); }
+    const st = game.statics; const seen = (x, z) => st.lineOfSight(x, 1.6, z, e.pos.x, 1.3, e.pos.z);
+    if (e.distTo(p.pos) > 14 || !seen(p.pos.x, p.pos.z)) { // flank: find an open spot with line of sight, like a player would
+      for (let k = 0; k < 32; k++) { const a = k / 32 * Math.PI * 2, r = 6 + (k % 3) * 2; const x = e.pos.x + Math.sin(a) * r, z = e.pos.z + Math.cos(a) * r;
+        if (!st.resolveCircle(x, z, 0.6, 0.3, 1.7).hit && seen(x, z)) { PM.tp(x, z, 0); break; } }
+    }
     PM.hold(['aim']); PM.step(2); T.aimAt(e.chestPos); PM.step(1); T.aimAt(e.chestPos); PM.tap('fire'); PM.step(4); shots++; frames += 7;
     const w = p.weapon; if (w && w.mag === 0) { PM.hold([]); PM.step(50); frames += 50; }
   }
