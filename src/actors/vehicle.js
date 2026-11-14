@@ -27,7 +27,7 @@ export function buildCarTemplates(assets) {
     scene.traverse((o) => {
       if (!o.isMesh) return;
       const mats = Array.isArray(o.material) ? o.material : [o.material];
-      const geo = o.geometry.clone(); geo.applyMatrix4(o.matrixWorld);
+      const geo = dequantize(o.geometry.clone()); geo.applyMatrix4(o.matrixWorld);
       if (/wheel/i.test(o.name)) {
         geo.computeBoundingBox(); const c = new THREE.Vector3(); geo.boundingBox.getCenter(c);
         const size = new THREE.Vector3(); geo.boundingBox.getSize(size);
@@ -62,6 +62,17 @@ export function buildCarTemplates(assets) {
     out[name] = { name, parts: merged, wheels, half: new THREE.Vector3(size.x / 2, size.y / 2, size.z / 2), height: size.y, wheelBase: frontZ - rearZ, paintColor, spec: CAR_SPECS[name] };
   }
   return out;
+}
+// meshopt/quantized GLBs store positions & normals as normalized int arrays; bake to float before transforming
+function dequantize(geo) {
+  for (const name of ['position', 'normal']) {
+    const a = geo.attributes[name]; if (!a || (a.array instanceof Float32Array && !a.isInterleavedBufferAttribute)) continue;
+    const out = new Float32Array(a.count * 3);
+    for (let i = 0; i < a.count; i++) { out[i * 3] = a.getX(i); out[i * 3 + 1] = a.getY(i); out[i * 3 + 2] = a.getZ(i); }
+    geo.setAttribute(name, new THREE.BufferAttribute(out, 3));
+  }
+  if (geo.attributes.normal) geo.attributes.normal.normalized = false;
+  return geo;
 }
 function extractGroup(geo, gr, color) {
   const g = new THREE.BufferGeometry();
@@ -208,6 +219,7 @@ export class Vehicle {
     this.pitchV += (-clamp(aF, -25, 25) * 0.0035 - this.pitch) * k * dt - this.pitchV * c * dt; this.pitch += this.pitchV * dt;
     this.rollV += (clamp(aR, -30, 30) * 0.0045 - this.roll) * k * dt - this.rollV * c * dt; this.roll += this.rollV * dt;
     this.wheelSpin += vF / 0.36 * dt;
+    this.simTime = (this.simTime || 0) + dt;
     if (this.burnTimer > 0) { this.burnTimer -= dt; if (this.burnTimer <= 0 && !this.dead) this.explode(); }
     this.syncVisual(dt);
   }
@@ -221,10 +233,10 @@ export class Vehicle {
     }
   }
   impact(speed, tag, other) {
-    const now = performance.now() / 1000;
-    if (now - this.lastHitTime > 0.25) {
+    const now = this.simTime || 0;
+    if (now - this.lastHitTime > 0.3) {
       this.lastHitTime = now;
-      this.damage(speed * speed * 2.2);
+      const s = Math.max(0, speed - 4); this.damage(s * s * 0.95);
       if (this.onImpact) this.onImpact(this, speed, tag, other);
     }
   }
@@ -232,7 +244,7 @@ export class Vehicle {
     if (this.dead) return;
     this.health -= amount;
     this.damageTint = clamp(1 - this.health / 1000, 0, 1);
-    if (this.health < 250 && this.burnTimer <= 0) this.burnTimer = 6;
+    if (this.health < 160 && this.burnTimer <= 0) this.burnTimer = 7;
     if (this.health <= 0) this.explode();
   }
   explode() {

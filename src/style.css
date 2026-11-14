@@ -14,7 +14,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 /* ============ HUD ============ */
 #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; text-shadow: 0 2px 4px rgba(0,0,0,0.55); transition: opacity .3s; }
 #hud.hidden { opacity: 0; visibility: hidden; }
-.hud-tr { position: absolute; top: 22px; right: 28px; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.hud-tr { position: absolute; top: 0; right: 0; padding: 22px 28px 18px 80px; background: radial-gradient(ellipse at 100% 0%, rgba(13,27,42,.45), transparent 70%); display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 .clock { font: 600 22px var(--f-ui); letter-spacing: 2px; opacity: .85; }
 .money { font: 400 46px/1 var(--f-display); color: #7ee0a2; letter-spacing: 1.5px; -webkit-text-stroke: 1px rgba(0,0,0,.35); }
 .stars { display: flex; gap: 2px; margin-top: 2px; }
@@ -23,7 +23,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 .star.dim { color: rgba(255,209,102,0.35); }
 .star.flash { transform: scale(1.25); color: #fff; }
 .weapon { margin-top: 10px; display: flex; flex-direction: column; align-items: flex-end; min-width: 170px; }
-.wname { font: 700 15px var(--f-ui); letter-spacing: 3px; text-transform: uppercase; color: var(--teal); }
+.wname { text-shadow: 0 0 6px rgba(0,0,0,.9), 0 1px 2px #000; font: 700 15px var(--f-ui); letter-spacing: 3px; text-transform: uppercase; color: var(--teal); }
 .ammo { font: 400 34px/1 var(--f-display); letter-spacing: 1px; }
 .ammo small { font-size: 20px; opacity: .6; }
 .reload { height: 3px; background: var(--gold); width: 0; align-self: stretch; margin-top: 3px; border-radius: 2px; }

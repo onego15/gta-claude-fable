@@ -22,11 +22,11 @@ window.PM = {
   // advance the simulation deterministically: n frames of dt seconds, with optional held virtual keys
   step(n = 1, dt = 1 / 30, keys) {
     game.fixedStep = true;
-    if (keys) { game.input.virtual.clear(); for (const k of keys) game.input.virtual.set(k, true); }
+    if (keys) window.PM.hold(keys);
     for (let i = 0; i < n; i++) game.frame(dt, window.PM.fast && i < n - 1);
     return { fps: game.lastRenderMs };
   },
-  hold(keys) { game.input.virtual.clear(); for (const k of keys || []) game.input.virtual.set(k, true); },
+  hold(keys) { const v = game.input.virtual; for (const [k, x] of [...v]) if (x !== 'tap') v.delete(k); for (const k of keys || []) v.set(k, true); },
   tap(k) { game.input.virtual.set(k, 'tap'); },
   release() { game.fixedStep = false; game.input.virtual.clear(); },
   tp(x, z, h = 0) { const p = game.player; if (p.inVehicle) { p.inVehicle.place(x, z, h); } else game.spawnPlayerAt(x, z, h); },

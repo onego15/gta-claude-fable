@@ -63,7 +63,7 @@ export class Game {
     this.missions = new Missions(this);
     // dynamic lights (fixed count to avoid shader recompiles)
     this.headLight = new THREE.SpotLight(0xfff0d0, 0, 45, 0.55, 0.5, 1.2); this.headLight.castShadow = false; this.scene.add(this.headLight, this.headLight.target);
-    this.copLight = new THREE.PointLight(0xff2020, 0, 22, 2); this.scene.add(this.copLight);
+    this.copLight = new THREE.PointLight(0xff2020, 0, 26, 1.6); this.scene.add(this.copLight);
     // player
     const hum = this.chars.create('Male_LongSleeve', { colors: { skin: '#c68d63', hair: '#1b1410', top: '#3d4f3a', bottom: '#23262b', shoes: '#5c3d2e' } });
     this.scene.add(hum.root);
@@ -374,6 +374,7 @@ export class Game {
     const p = this.player;
     this.sky.update(title ? 0 : dt, this.focusPos());
     const night = this.sky.night;
+    this.gfx.bloom.strength = 0.16 + night * 0.42 + this.sky.dusk * 0.08; this.gfx.bloom.threshold = 0.9 - night * 0.12;
     // city night lighting
     const d = this.city.data;
     const lampOn = clamp((night - 0.25) * 3, 0, 1);
@@ -436,7 +437,7 @@ export class Game {
       this.headLight.target.position.copy(pv.pos).addScaledVector(f, pv.hz + 15);
     } else this.headLight.intensity = 0;
     const cop = V.filter((v) => v.police && v.sirenOn && !v.dead).sort((a, b) => a.pos.distanceTo(this.camera.position) - b.pos.distanceTo(this.camera.position))[0];
-    if (cop && cop.pos.distanceTo(this.camera.position) < 80) { this.copLight.position.copy(cop.pos).add(new THREE.Vector3(0, 2.2, 0)); const ph = Math.floor(this.time * 6) % 2; this.copLight.color.set(ph ? 0xff2020 : 0x2040ff); this.copLight.intensity = 25 + night * 40; }
+    if (cop && cop.pos.distanceTo(this.camera.position) < 80) { this.copLight.position.copy(cop.pos).add(new THREE.Vector3(0, 3.4, 0)); const ph = Math.floor(this.time * 6) % 2; this.copLight.color.set(ph ? 0xff2020 : 0x2040ff); this.copLight.intensity = 5 + night * 16; }
     else this.copLight.intensity = 0;
     this.effects.update(dt);
   }
