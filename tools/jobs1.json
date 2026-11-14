@@ -1,0 +1,5 @@
+[
+ {"src":"raw/Male_Casual.fbx","out":"out/test_male.glb","opts":{"name":"male","height":1.78,"anims":true}},
+ {"src":"raw/Smooth_Male_Casual.fbx","out":"out/test_smale.glb","opts":{"name":"smale","height":1.78}},
+ {"src":"raw/NormalCar1.fbx","out":"out/test_car.glb","opts":{"name":"car","rotX":-1.5708,"length":4.4}}
+]

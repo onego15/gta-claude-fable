@@ -1,0 +1,22 @@
+<!doctype html><html><body style="margin:0"><script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+const r = new THREE.WebGLRenderer({antialias:true}); r.setSize(900,500); document.body.appendChild(r.domElement);
+r.toneMapping = THREE.ACESFilmicToneMapping; r.outputColorSpace = THREE.SRGBColorSpace;
+const sc = new THREE.Scene(); sc.background = new THREE.Color(0x8899aa);
+sc.add(new THREE.HemisphereLight(0xffffff,0x445566,1.5)); const d=new THREE.DirectionalLight(0xffffff,2); d.position.set(3,5,4); sc.add(d);
+const cam = new THREE.PerspectiveCamera(40, 900/500, 0.1, 100);
+window.show = async (urls, camPos, target, clip, t) => {
+  const L = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+  let x = 0;
+  for (const u of urls) { const g = await L.loadAsync(u); g.scene.position.x = x; x += 2.5; sc.add(g.scene);
+    let anims = g.animations;
+    if (clip && window.animUrl) { anims = (await L.loadAsync(window.animUrl)).animations; }
+    if (clip && anims.length) { const m = new THREE.AnimationMixer(g.scene); const a = m.clipAction(THREE.AnimationClip.findByName(anims, clip)); a.play(); m.update(t||0.3); }
+    if (false) { const m = new THREE.AnimationMixer(g.scene); const a = m.clipAction(THREE.AnimationClip.findByName(g.animations, clip)); a.play(); m.update(t||0.3); }
+  }
+  sc.add(new THREE.GridHelper(20,20));
+  cam.position.set(...camPos); cam.lookAt(...target); r.render(sc,cam);
+};
+</script></body></html>

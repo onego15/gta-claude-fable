@@ -1,0 +1,11 @@
+<!doctype html><html><body><script type="module">
+import * as THREE from 'three';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
+window.inspect = async (url) => {
+  const o = await new FBXLoader().loadAsync(url);
+  const box = new THREE.Box3().setFromObject(o);
+  const meshes=[]; const bones=[];
+  o.traverse(c=>{ if(c.isMesh){ const m=Array.isArray(c.material)?c.material:[c.material]; meshes.push({name:c.name,skinned:!!c.isSkinnedMesh,verts:c.geometry.attributes.position.count, mats:m.map(x=>x.name+':'+x.type+':'+(x.color?x.color.getHexString():'')+(x.map?':tex':'')), vc:!!c.geometry.attributes.color});} if(c.isBone) bones.push(c.name); });
+  return {clips:o.animations.map(a=>a.name+' '+a.duration.toFixed(2)), box:[box.min.toArray().map(v=>+v.toFixed(2)),box.max.toArray().map(v=>+v.toFixed(2))], scale:o.scale.toArray(), meshes, bones:bones.slice(0,40), nb:bones.length};
+};
+</script></body></html>

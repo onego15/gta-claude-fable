@@ -1,0 +1,8 @@
+node_modules
+dist
+tools/raw
+tools/out
+tools/opt
+tools/node_modules
+test-results
+*.log

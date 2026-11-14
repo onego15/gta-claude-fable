@@ -1,0 +1,41 @@
+<!doctype html><html><body><script type="module">
+import * as THREE from 'three';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
+import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
+function toStd(m){
+  const s = new THREE.MeshStandardMaterial({name:m.name, color:m.color.clone(), roughness:0.8, metalness:0, vertexColors: m.vertexColors});
+  if (m.map) s.map=m.map;
+  return s;
+}
+function exportGLB(obj, animations){
+  return new Promise((res,rej)=>new GLTFExporter().parse(obj, r=>{
+    const u8=new Uint8Array(r); let s=''; for(let i=0;i<u8.length;i+=8192) s+=String.fromCharCode.apply(null,u8.subarray(i,i+8192)); res(btoa(s));
+  }, rej, {binary:true, animations: animations||[], onlyVisible:false}));
+}
+window.convert = async (url, opts) => {
+  const o = await new FBXLoader().loadAsync(url);
+  o.traverse(c=>{ if(c.isMesh){ c.material = Array.isArray(c.material)? c.material.map(toStd): toStd(c.material); } });
+  const root = new THREE.Group(); root.name = opts.name;
+  if (opts.rotX) o.rotation.x = opts.rotX;
+  const mid = new THREE.Group(); mid.name = opts.name+'_pivot'; if (opts.rotY) mid.rotation.y = opts.rotY;
+  mid.add(o); root.add(mid);
+  root.updateMatrixWorld(true);
+  let box = new THREE.Box3().setFromObject(root);
+  const size = box.getSize(new THREE.Vector3());
+  let s = 1;
+  if (opts.height) s = opts.height/size.y;
+  if (opts.length) s = opts.length/Math.max(size.x,size.z);
+  if (opts.scale) s = opts.scale;
+  o.scale.multiplyScalar(s);
+  root.updateMatrixWorld(true);
+  box = new THREE.Box3().setFromObject(root);
+  const c = box.getCenter(new THREE.Vector3());
+  mid.position.x -= c.x; mid.position.z -= c.z; mid.position.y -= box.min.y;
+  root.updateMatrixWorld(true);
+  let anims = [];
+  if (opts.anims) anims = o.animations.map(a=>{ const b=a.clone(); b.name = a.name.split('|').pop().replace(/^(Man|Female)_/,''); return b; });
+  if (opts.noMesh) { o.traverse(c=>{ if(c.isMesh) c.visible=false; }); const meshes=[]; o.traverse(c=>{if(c.isMesh) meshes.push(c)}); meshes.forEach(m=>m.parent.remove(m)); }
+  const box2 = new THREE.Box3().setFromObject(root);
+  return { glb: await exportGLB(root, anims), box:[box2.min.toArray(),box2.max.toArray()], s };
+};
+</script></body></html>
